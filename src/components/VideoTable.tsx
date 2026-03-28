@@ -118,12 +118,12 @@ export default function VideoTable({ videos, onExport }: Props) {
                 <th className={thClass('velocity')} onClick={() => handleSort('velocity')}>
                   Velocity/day {sortIcon('velocity')}
                 </th>
-                <th className={thClass('engagementRate')} onClick={() => handleSort('engagementRate')}>
-                  Eng. rate {sortIcon('engagementRate')}
-                </th>
-                <th className={thClass('daysAgo')} onClick={() => handleSort('daysAgo')}>
-                  Age {sortIcon('daysAgo')}
-                </th>
+               <th className={`${thClass('engagementRate')} hidden sm:table-cell`} onClick={() => handleSort('engagementRate')}>
+  Eng. rate {sortIcon('engagementRate')}
+ </th>
+<th className={`${thClass('daysAgo')} hidden sm:table-cell`} onClick={() => handleSort('daysAgo')}>
+  Age {sortIcon('daysAgo')}
+</th>
                 <th className="vm-label text-left px-4 py-3">Trend</th>
               </tr>
             </thead>
@@ -190,14 +190,13 @@ export default function VideoTable({ videos, onExport }: Props) {
                       </td>
 
                       {/* Engagement */}
-                      <td className="px-4 py-3 whitespace-nowrap text-[13px] text-white">
-                        {v.engagementRate.toFixed(1)}%
-                      </td>
-
-                      {/* Age */}
-                      <td className="px-4 py-3 whitespace-nowrap text-muted text-[12px]">
-                        {v.daysAgo}d
-                      </td>
+                     <td className="px-4 py-3 whitespace-nowrap text-[13px] text-white hidden sm:table-cell">
+  {v.engagementRate.toFixed(1)}%
+</td>
+{/* Age */}
+<td className="px-4 py-3 whitespace-nowrap text-muted text-[12px] hidden sm:table-cell">
+  {v.daysAgo}d
+</td>
 
                       {/* Trend */}
                       <td className="px-4 py-3">
