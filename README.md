@@ -1,22 +1,25 @@
 # VidMetrics — Competitor Intelligence
 
-A clean, fast YouTube competitor analysis tool built for enterprise creators and agencies. Paste a channel URL and instantly see which videos are gaining traction this month — sorted by view velocity, engagement rate, and trending signals.
+Analyze competitor YouTube channel performance. Paste any channel URL and instantly see which videos are crushing it — view velocity, engagement rate, trending signals, and more.
 
-![VidMetrics Dashboard](https://via.placeholder.com/1200x600/0e0e0e/0F9D74?text=VidMetrics+Dashboard)
+Built as a take-home project for VidMetrics. Shipped in one session using Next.js, Tailwind, and the YouTube Data API v3.
 
 ---
 
 ## Features
 
-- **Channel analysis** — resolve any YouTube URL, @handle, or channel ID
-- **View velocity** — views per day since publish (the core "crushing it" metric)
-- **Engagement rate** — (likes + comments) / views, per video
-- **Trend classification** — Hot / Rising / Steady / Fading, based on velocity + age
-- **Sortable table** — click any column header to re-sort
-- **Search + filter** — filter by title keyword or trend status
-- **Velocity chart** — bar chart of all videos, color-coded by trend
-- **CSV export** — one-click download of full dataset
-- **Responsive** — works on mobile and tablet
+- **Channel analysis** — resolves any YouTube URL format (`@handle`, `/channel/UCxxx`, or legacy username)
+- **Channel health score** — 0–100 score based on velocity, engagement, and trending ratio
+- **Top performer card** — pinned highlight of the best video this month
+- **View velocity** — views per day since publish, the core "crushing it" signal
+- **Trend classification** — Hot, Rising, Steady, Fading based on velocity + video age
+- **Engagement rate** — (likes + comments) / views per video
+- **Sortable table** — click any column header to sort
+- **Search + filter** — filter by title or trend status
+- **Search history** — last 5 searches saved locally, one click to reload
+- **Velocity chart** — bar chart of all recent videos, color-coded by trend
+- **CSV export** — one-click download of full video dataset
+- **Responsive** — works on mobile
 
 ---
 
@@ -24,26 +27,24 @@ A clean, fast YouTube competitor analysis tool built for enterprise creators and
 
 | Layer | Choice | Why |
 |-------|--------|-----|
-| Framework | Next.js 14 (App Router) | API routes keep the YouTube key server-side |
+| Framework | Next.js 15 (App Router) | API routes keep the YouTube key server-side |
 | Styling | Tailwind CSS | Utility-first, fast to iterate |
-| Charts | Recharts | Composable, works well with React |
-| Icons | Lucide React | Consistent, lightweight |
-| Deploy | Vercel | Native Next.js support, env vars built-in |
-| Data | YouTube Data API v3 | Official, reliable, 10k quota/day free |
+| Charts | Recharts | Composable, React-native charting |
+| Icons | Lucide React | Clean, consistent icon set |
+| Deploy | Vercel | Zero-config Next.js deployment |
+| Data | YouTube Data API v3 | Official, reliable, free tier sufficient |
 
 ---
 
 ## Getting Started
 
 ### 1. Clone the repo
-
 ```bash
-git clone https://github.com/YOUR_USERNAME/vidmetrics.git
+git clone https://github.com/yourusername/vidmetrics.git
 cd vidmetrics
 ```
 
 ### 2. Install dependencies
-
 ```bash
 npm install
 ```
@@ -51,25 +52,22 @@ npm install
 ### 3. Get a YouTube API key
 
 1. Go to [console.cloud.google.com](https://console.cloud.google.com)
-2. Create a new project (e.g. `vidmetrics`)
-3. **APIs & Services → Library** → search `YouTube Data API v3` → Enable
-4. **APIs & Services → Credentials → Create Credentials → API Key**
+2. Create a new project
+3. **APIs & Services → Library → YouTube Data API v3 → Enable**
+4. **Credentials → Create Credentials → API Key**
 5. Copy the key
 
-### 4. Add your key
-
+### 4. Add your API key
 ```bash
 cp .env.local.example .env.local
 ```
 
 Open `.env.local` and replace the placeholder:
-
 ```
-YOUTUBE_API_KEY=AIza...your_real_key_here
+YOUTUBE_API_KEY=AIza...your_key_here
 ```
 
 ### 5. Run locally
-
 ```bash
 npm run dev
 ```
@@ -80,36 +78,28 @@ Open [http://localhost:3000](http://localhost:3000)
 
 ## Deployment (Vercel)
 
-```bash
-npm i -g vercel
-vercel
-```
-
-When prompted, add the environment variable:
-- **Key:** `YOUTUBE_API_KEY`
-- **Value:** your API key
-
-Or connect your GitHub repo to [vercel.com](https://vercel.com) and add the env var in **Project Settings → Environment Variables**.
+Connect your GitHub repo to [vercel.com](https://vercel.com) and add `YOUTUBE_API_KEY` in **Project Settings → Environment Variables**. Every `git push` auto-deploys.
 
 ---
 
 ## Project Structure
-
 ```
 src/
 ├── app/
-│   ├── api/channel/route.ts   # YouTube API proxy (server-side)
-│   ├── globals.css            # Base styles + font imports
+│   ├── api/channel/route.ts   # YouTube API proxy (server-side, key stays secret)
+│   ├── globals.css            # Tailwind base + custom component classes
 │   ├── layout.tsx             # Root layout + metadata
 │   └── page.tsx               # Main dashboard page
 ├── components/
-│   ├── ChannelInput.tsx       # URL input + quick-load demos
-│   ├── ChannelHeader.tsx      # Channel avatar, name, subs
+│   ├── ChannelInput.tsx       # URL input + search history + demo buttons
+│   ├── ChannelHeader.tsx      # Channel avatar, name, subscriber count
+│   ├── HealthScore.tsx        # 0-100 channel health score with breakdown
+│   ├── TopPerformer.tsx       # Best video card pinned above table
 │   ├── StatCards.tsx          # 4 KPI summary cards
-│   ├── VelocityChart.tsx      # Recharts bar chart
-│   └── VideoTable.tsx         # Sortable, filterable video table
+│   ├── VelocityChart.tsx      # Recharts bar chart, trend-colored
+│   └── VideoTable.tsx         # Sortable/filterable video table + export
 └── lib/
-    ├── youtube.ts             # YouTube API calls + data enrichment
+    ├── youtube.ts             # YouTube API calls, types, enrichment logic
     └── utils.ts               # Number formatters, trend config
 ```
 
@@ -117,34 +107,34 @@ src/
 
 ## How I Built This
 
-**Time:** ~4 hours end to end
+**Approach:** Started from the core insight the client wanted — "which videos are crushing it." Defined "crushing it" as view velocity (views/day), not raw views, because a video with 500K views in 2 days beats one with 2M views over 6 months.
 
-**Approach:**
-1. Started with the core data model — what does "crushing it" actually mean? Landed on **view velocity** (views/day) as the primary signal, since raw view count favors older videos unfairly.
-2. Built the API layer first (`src/lib/youtube.ts`) before touching the UI — this kept data concerns separate from presentation.
-3. Used Next.js API routes as a thin proxy so the YouTube key never reaches the browser.
-4. Designed the UI around a single color accent (`#0F9D74`) with a monospaced font (`DM Mono`) to give it a calm, analytical feel — like a Bloomberg terminal, not a startup landing page.
-5. Added CSV export as a one-liner since enterprise clients always want to pull data into their own tools.
+**AI-assisted workflow:**
+- Used Claude to scaffold the full project structure and all component files
+- Iterated on the design system — chose DM Mono + Fraunces for a "calm analyst" aesthetic
+- API layer designed to keep the YouTube key server-side from day one (Next.js API route as proxy)
+- All business logic (velocity calc, trend classification, health score) lives in lib files — testable and separate from UI
 
-**AI tools used:**
-- Claude (Anthropic) — architecture decisions, component structure, YouTube API integration patterns
-- Used AI to accelerate boilerplate (table sorting logic, chart config) while writing business logic manually
+**Key decisions:**
+- **Next.js over Vite** — API routes mean the key never hits the client bundle
+- **View velocity as primary metric** — more signal than raw views for "this month" analysis
+- **Health score** — single number summarising channel momentum, easy for clients to scan
+- **Search history** — enterprise users re-check the same competitors repeatedly
+- **CSV export** — enterprise clients want to put data in their own tools
 
-**What I'd add in v2:**
-- Cross-channel comparison (overlay two competitors side by side)
-- Sparkline per video showing daily velocity over time
-- Category/topic clustering using video tags
+---
+
+## What I'd Add in V2
+
+- Cross-channel comparison (overlay 2 competitors on one chart)
+- Sparkline per video showing velocity over time
 - Shareable report URL (serialize state to query params)
-- Webhook alert when a competitor's video crosses a velocity threshold
+- Caching layer to avoid re-fetching same channels repeatedly
+- Webhook alerts when a competitor video crosses a velocity threshold
+- Dark/light mode toggle
 
 ---
 
 ## API Quota
 
-The YouTube Data API v3 has a free quota of **10,000 units/day**. Each channel analysis uses approximately 3 requests (~5 units total). You won't hit limits in normal demo/dev usage.
-
----
-
-## License
-
-MIT
+The YouTube Data API v3 free tier gives **10,000 units/day**. Each full channel analysis costs roughly 3–5 units. You won't hit the limit in normal use.
