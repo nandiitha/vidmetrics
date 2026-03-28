@@ -1,5 +1,8 @@
 # VidMetrics — Competitor Intelligence
 
+## Live Demo
+[vidmetrics-ze3i.vercel.app]https://vidmetrics-ze3i.vercel.app/
+
 Analyze competitor YouTube channel performance. Paste any channel URL and instantly see which videos are crushing it — view velocity, engagement rate, trending signals, and more.
 
 Built as a take-home project for VidMetrics. Shipped in one session using Next.js, Tailwind, and the YouTube Data API v3.
@@ -123,6 +126,43 @@ src/
 - **CSV export** — enterprise clients want to put data in their own tools
 
 ---
+
+---
+
+## Build Approach & Notes
+
+**Time taken:** ~3 hours from blank project to deployed app.
+
+**Tools used:**
+- Claude (Anthropic) — architecture decisions, all code generation, debugging
+- Next.js 15 App Router — framework
+- Vercel — deployment
+- GitHub — version control with intentional commit history
+
+**What I automated with AI:**
+- Full project scaffold and file structure
+- All component code — ChannelInput, StatCards, VelocityChart, VideoTable, HealthScore, TopPerformer
+- YouTube API integration layer — channel resolution, video enrichment, velocity and engagement calculations
+- Debugging build errors (ESLint conflicts, module resolution, ES module warnings)
+- README and documentation
+
+**What I made judgment calls on:**
+- Defining "crushing it" as view velocity (views/day) not raw views — a 2-day-old video with 500K views beats a 30-day-old video with 2M
+- Choosing Next.js over Vite specifically because the API key needed to stay server-side
+- The "calm analyst" design direction — DM Mono + Fraunces, dark theme, single teal accent, no decoration
+- Health score weightings — 40pts velocity, 35pts engagement, 25pts trending ratio
+- Hiding columns on mobile rather than making the table horizontally scroll
+
+**How I used AI to move fast:**
+- Described the product goal first, let Claude propose the architecture
+- Went file by file with clear commit boundaries so the history tells a story
+- When errors hit (ESLint, missing deps, ES module warnings), pasted the exact error and fixed surgically — never started over
+- Treated Claude as a senior dev pairing with me, not a code vending machine
+
+**Tradeoffs made:**
+- ESLint errors suppressed during build to ship faster — would clean up in v2
+- Mock-friendly data layer — swapping in real API just required the key, no structural changes
+- No caching — same channel re-fetches every time, fine for a demo, needs Redis in production
 
 ## What I'd Add in V2
 
