@@ -1,101 +1,160 @@
-import Image from "next/image";
+'use client'
+
+import { useState } from 'react'
+import ChannelInput from '@/components/ChannelInput'
+import ChannelHeader from '@/components/ChannelHeader'
+import StatCards from '@/components/StatCards'
+import VelocityChart from '@/components/VelocityChart'
+import VideoTable from '@/components/VideoTable'
+import { ChannelInfo, EnrichedVideo } from '@/lib/youtube'
+import { fmtNum } from '@/lib/utils'
+import { AlertCircle } from 'lucide-react'
+
+interface AnalysisResult {
+  channel: ChannelInfo
+  videos: EnrichedVideo[]
+  summary: {
+    totalViews30d: number
+    avgVelocity: number
+    avgEngagement: number
+    trendingCount: number
+    videoCount: number
+  }
+}
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [result, setResult] = useState<AnalysisResult | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  async function handleAnalyze(input: string) {
+    setLoading(true)
+    setError(null)
+    setResult(null)
+
+    try {
+      const res = await fetch(`/api/channel?channel=${encodeURIComponent(input)}`)
+      const data = await res.json()
+
+      if (!res.ok) throw new Error(data.error || 'Failed to fetch channel data')
+
+      setResult(data)
+    } catch (err: any) {
+      setError(err.message || 'Something went wrong')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  function handleExportCSV() {
+    if (!result) return
+    const rows = [
+      ['Title', 'Views', 'Velocity/day', 'Engagement Rate (%)', 'Age (days)', 'Duration', 'Trend', 'URL'],
+      ...result.videos.map(v => [
+        `"${v.title.replace(/"/g, '""')}"`,
+        v.views,
+        v.velocity,
+        v.engagementRate.toFixed(2),
+        v.daysAgo,
+        v.duration,
+        v.trend,
+        `https://youtube.com/watch?v=${v.id}`,
+      ]),
+    ]
+    const csv = rows.map(r => r.join(',')).join('\n')
+    const a = document.createElement('a')
+    a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv)
+    a.download = `${result.channel.handle}_vidmetrics_${new Date().toISOString().slice(0, 10)}.csv`
+    a.click()
+  }
+
+  return (
+    <div className="min-h-screen bg-surface">
+      {/* Header */}
+      <header className="border-b border-border bg-panel sticky top-0 z-10">
+        <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
+          <span className="font-serif italic font-light text-xl text-white tracking-tight">
+            Vid<span className="text-accent">Metrics</span>
+          </span>
+          <span className="text-[10px] uppercase tracking-widest text-muted border border-border rounded-full px-3 py-1 font-mono">
+            Competitor Intel
+          </span>
         </div>
+      </header>
+
+      <main className="max-w-6xl mx-auto px-6 py-8">
+        <ChannelInput onAnalyze={handleAnalyze} loading={loading} />
+
+        {/* Error state */}
+        {error && (
+          <div className="vm-panel p-4 mb-6 flex items-start gap-3 border-red-900/50 bg-[#1e0e0e]">
+            <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-red-400 text-sm font-mono">{error}</p>
+              <p className="text-muted text-xs mt-1 font-mono">
+                Check your API key in .env.local, or try a different channel format like @handle
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Loading skeleton */}
+        {loading && (
+          <div className="space-y-4 animate-pulse">
+            <div className="vm-panel h-16" />
+            <div className="grid grid-cols-4 gap-3">
+              {[...Array(4)].map((_, i) => <div key={i} className="vm-panel h-24" />)}
+            </div>
+            <div className="vm-panel h-52" />
+            <div className="vm-panel h-64" />
+          </div>
+        )}
+
+        {/* Results */}
+        {result && !loading && (
+          <>
+            <ChannelHeader channel={result.channel} window="Last 30 days" />
+            <StatCards {...result.summary} />
+            {result.videos.length > 0 ? (
+              <>
+                <VelocityChart videos={result.videos} />
+                <VideoTable videos={result.videos} onExport={handleExportCSV} />
+              </>
+            ) : (
+              <div className="vm-panel p-16 text-center">
+                <p className="font-serif italic text-2xl font-light text-muted mb-2">No recent videos</p>
+                <p className="text-xs text-muted font-mono">
+                  This channel hasn't posted in the last 30 days.
+                </p>
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Empty state */}
+        {!result && !loading && !error && (
+          <div className="text-center py-24">
+            <p className="font-serif italic text-3xl font-light text-[#2a2a2a] mb-3">
+              Paste a channel URL above
+            </p>
+            <p className="text-xs text-muted font-mono max-w-sm mx-auto leading-relaxed">
+              Analyze competitor view velocity, engagement rate, and trending signals
+              across their last 30 days of content.
+            </p>
+          </div>
+        )}
       </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+
+      <footer className="border-t border-border mt-16">
+        <div className="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
+          <span className="text-[10px] text-muted font-mono uppercase tracking-wider">
+            VidMetrics · Competitor Intelligence
+          </span>
+          <span className="text-[10px] text-muted font-mono">
+            Data via YouTube Data API v3
+          </span>
+        </div>
       </footer>
     </div>
-  );
+  )
 }
