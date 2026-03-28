@@ -33,7 +33,7 @@ export default function VelocityChart({ videos }: Props) {
   const sorted = [...videos].sort((a, b) => b.velocity - a.velocity).slice(0, 12)
   const data = sorted.map(v => ({
     ...v,
-    label: v.title.length > 22 ? v.title.slice(0, 22) + '…' : v.title,
+   label: v.title.length > 14 ? v.title.slice(0, 14) + '…' : v.title,
   }))
 
   return (
@@ -46,15 +46,16 @@ export default function VelocityChart({ videos }: Props) {
       </div>
       <ResponsiveContainer width="100%" height={200}>
         <BarChart data={data} margin={{ top: 4, right: 4, left: 0, bottom: 40 }}>
-          <XAxis
-            dataKey="label"
-            tick={{ fontSize: 10, fontFamily: 'DM Mono', fill: '#888780' }}
-            angle={-30}
-            textAnchor="end"
-            interval={0}
-            tickLine={false}
-            axisLine={false}
-          />
+         <XAxis
+  dataKey="label"
+  tick={{ fontSize: 9, fontFamily: 'DM Mono', fill: '#888780' }}
+  angle={-45}
+  textAnchor="end"
+  interval={0}
+  tickLine={false}
+  axisLine={false}
+  height={60}
+/>
           <YAxis
             tickFormatter={fmtNum}
             tick={{ fontSize: 10, fontFamily: 'DM Mono', fill: '#888780' }}
