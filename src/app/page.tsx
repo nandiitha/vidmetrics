@@ -7,6 +7,8 @@ import StatCards from '@/components/StatCards'
 import VelocityChart from '@/components/VelocityChart'
 import VideoTable from '@/components/VideoTable'
 import { ChannelInfo, EnrichedVideo } from '@/lib/youtube'
+import TopPerformer from '@/components/TopPerformer'
+import HealthScore from '@/components/HealthScore'
 import { fmtNum } from '@/lib/utils'
 import { AlertCircle } from 'lucide-react'
 
@@ -111,15 +113,17 @@ export default function Home() {
         )}
 
         {/* Results */}
-        {result && !loading && (
-          <>
-            <ChannelHeader channel={result.channel} window="Last 30 days" />
-            <StatCards {...result.summary} />
-            {result.videos.length > 0 ? (
-              <>
-                <VelocityChart videos={result.videos} />
-                <VideoTable videos={result.videos} onExport={handleExportCSV} />
-              </>
+      {result && !loading && (
+  <>
+    <ChannelHeader channel={result.channel} window="Last 30 days" />
+    <StatCards {...result.summary} />
+    <HealthScore {...result.summary} />
+    {result.videos.length > 0 ? (
+      <>
+        <TopPerformer video={result.videos[0]} />
+        <VelocityChart videos={result.videos} />
+        <VideoTable videos={result.videos} onExport={handleExportCSV} />
+      </>
             ) : (
               <div className="vm-panel p-16 text-center">
                 <p className="font-serif italic text-2xl font-light text-muted mb-2">No recent videos</p>
