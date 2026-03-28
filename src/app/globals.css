@@ -1,27 +1,75 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@1,300;1,400&family=DM+Mono:wght@300;400;500&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --accent: #0F9D74;
   }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    background: #0e0e0e;
+  }
+
+  body {
+    background: #0e0e0e;
+    color: #e8e6df;
+    font-family: 'DM Mono', monospace;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection {
+    background: rgba(15, 157, 116, 0.25);
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover { background: #444; }
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
-}
-
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
+@layer components {
+  .vm-input {
+    @apply w-full h-10 bg-[#1a1a1a] border border-[#2e2e2e] rounded-lg px-4 text-sm text-white font-mono
+    outline-none transition-colors duration-150 placeholder:text-[#555];
   }
+  .vm-input:focus {
+    border-color: #0F9D74;
+  }
+
+  .vm-btn-primary {
+    @apply h-10 px-5 bg-accent hover:bg-accent-dim text-white text-xs font-mono font-medium
+    rounded-lg transition-all duration-150 whitespace-nowrap disabled:opacity-40 disabled:cursor-not-allowed;
+  }
+
+  .vm-btn-ghost {
+    @apply h-8 px-3 text-xs font-mono text-muted border border-border rounded-md
+    hover:border-accent hover:text-accent transition-all duration-150 bg-transparent;
+  }
+
+  .vm-panel {
+    @apply bg-panel border border-border rounded-xl;
+  }
+
+  .vm-label {
+    @apply text-[10px] uppercase tracking-widest text-muted;
+  }
+
+  .vm-select {
+    @apply h-8 px-2 bg-panel border border-border rounded-md text-xs font-mono text-white
+    outline-none cursor-pointer transition-colors;
+  }
+  .vm-select:focus { border-color: #0F9D74; }
 }
